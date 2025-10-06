@@ -1,0 +1,19 @@
+services:
+  addressapi:
+    image: address-api--dev:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8023:8080"
+    container_name: address-api-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      carenest-network:
+        ipv4_address: 192.168.0.26
+
+networks:
+  carenest-network:
+    external: true
