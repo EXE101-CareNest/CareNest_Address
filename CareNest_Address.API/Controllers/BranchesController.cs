@@ -1,7 +1,7 @@
-﻿
-using CareNest_Address.Application.Common;
+﻿using CareNest_Address.Application.Common;
 using CareNest_Address.Application.Features.Commands.Create;
 using CareNest_Address.Application.Features.Commands.Delete;
+using CareNest_Address.Application.Features.Commands.SetDefault;
 using CareNest_Address.Application.Features.Commands.Update;
 using CareNest_Address.Application.Features.Queries.GetAllPaging;
 using CareNest_Address.Application.Features.Queries.GetById;
@@ -93,7 +93,7 @@ namespace CareNest_Address.API.Controllers
             {
                 Id = id,
                 PhoneNumber = request.PhoneNumber,
-                AccountId= request.AccountId,
+                AccountId = request.AccountId,
                 AddressName = request.AddressName,
                 ReceiverName = request.ReceiverName
             };
@@ -113,5 +113,24 @@ namespace CareNest_Address.API.Controllers
             await _dispatcher.DispatchAsync(new DeleteCommand { Id = id });
             return this.OkResponse(MessageConstant.SuccessDelete);
         }
+        
+            /// <summary>
+    /// Đặt hoặc bỏ đặt default cho một địa chỉ
+    /// POST /addresses/{id}/default
+    /// </summary>
+    [HttpPost("addresses/{id}/default")]
+    public async Task<IActionResult> SetDefault(string id, [FromBody] SetDefaultRequest request)
+    {
+        var command = new SetDefaultCommand()
+        {   
+            Id = id,
+            IsDefault = request.IsDefault,
+            AccountId = request.AccountId
+        };
+
+        Address result = await _dispatcher.DispatchAsync<SetDefaultCommand, Address>(command);
+
+        return this.OkResponse(result, MessageConstant.SuccessUpdate);
+    }
     }
 }

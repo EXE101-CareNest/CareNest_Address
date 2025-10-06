@@ -3,6 +3,7 @@ using CareNest_Address.Application.Common;
 using CareNest_Address.Application.Features.Commands.Create;
 using CareNest_Address.Application.Features.Commands.Delete;
 using CareNest_Address.Application.Features.Commands.Update;
+using CareNest_Address.Application.Features.Commands.SetDefault;
 using CareNest_Address.Application.Features.Queries.GetAllPaging;
 using CareNest_Address.Application.Features.Queries.GetById;
 using CareNest_Address.Application.Interfaces.CQRS;
@@ -92,6 +93,7 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<ICommandHandler<CreateCommand, Address>, CreateCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateCommand, Address>, UpdateCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteCommand>, DeleteCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<SetDefaultCommand, Address>, SetDefaultCommandHandler>();
 //query
 builder.Services.AddScoped<IQueryHandler<GetAllPagingQuery, PageResult<AddressResponse>>, GetAllPagingQueryHandler>();
 builder.Services.AddScoped<IQueryHandler<GetByIdQuery, Address>, GetByIdQueryHandler>();
