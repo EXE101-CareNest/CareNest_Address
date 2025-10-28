@@ -150,7 +150,7 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
-app.UseCors("AllowAll");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -165,8 +165,12 @@ using (var scope = app.Services.CreateScope())
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors("AllowAll");
+
 
 app.UseAuthorization();
+
 
 app.MapControllers();
 
