@@ -1,0 +1,34 @@
+# Ignore development files
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+
+# Ignore IDE files
+.vs/
+.vscode/
+*.swp
+*.swo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore test files
+**/TestResults/
+**/coverage/
+
+# Ignore documentation
+*.md
+docs/
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore docker compose for local development
+docker-compose.yml
+
+
