@@ -1,6 +1,7 @@
 ﻿using CareNest_Address.Application.Common;
 using CareNest_Address.Application.Interfaces.Services;
 using CareNest_Addressry.Application.Common.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,14 +12,14 @@ namespace CareNest_Address.Infrastructure.Services
     public class APIService : IAPIService
     {
         private readonly HttpClient _httpClient;
-
         private readonly APIServiceOption _option;
+        private readonly ILogger<APIService> _logger;
 
-
-        public APIService(HttpClient httpClient, IOptions<APIServiceOption> option)
+        public APIService(HttpClient httpClient, IOptions<APIServiceOption> option, ILogger<APIService> logger)
         {
             _httpClient = httpClient;
             _option = option.Value;
+            _logger = logger;
             _httpClient.BaseAddress = new Uri(option.Value.BaseUrlAccount);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -29,9 +30,14 @@ namespace CareNest_Address.Infrastructure.Services
             {
                 string baseUrl = GetBaseUrl(serviceType);
                 string fullUrl = $"{baseUrl}{endpoint}";
+                
+                _logger.LogInformation("Calling Account API: {FullUrl}", fullUrl);
 
                 HttpResponseMessage response = await _httpClient.GetAsync(fullUrl);
                 string jsonResponse = await response.Content.ReadAsStringAsync();
+                
+                _logger.LogInformation("Account API Response: Status={StatusCode}, Body={ResponseBody}", 
+                    response.StatusCode, jsonResponse);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -63,6 +69,7 @@ namespace CareNest_Address.Infrastructure.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error calling Account API: {Message}", ex.Message);
                 return new ResponseResult<T>
                 {
                     IsSuccess = false,
@@ -100,6 +107,7 @@ namespace CareNest_Address.Infrastructure.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error calling Account API: {Message}", ex.Message);
                 return new ResponseResult<T>
                 {
                     IsSuccess = false,
@@ -132,6 +140,7 @@ namespace CareNest_Address.Infrastructure.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error calling Account API: {Message}", ex.Message);
                 return new ResponseResult<T>
                 {
                     IsSuccess = false,
@@ -161,6 +170,7 @@ namespace CareNest_Address.Infrastructure.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error calling Account API: {Message}", ex.Message);
                 return new ResponseResult<T>
                 {
                     IsSuccess = false,
