@@ -35,22 +35,38 @@ DatabaseSettings dbSettings = builder.Configuration.GetSection("DatabaseSettings
 dbSettings.Display();
 string connectionString = dbSettings!.GetConnectionString();
 
+// Override bằng DATABASE_URL (Heroku style) nếu có
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrWhiteSpace(databaseUrl))
+{
+    try
+    {
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':', 2);
+        var host = uri.Host;
+        var port = uri.Port;
+        var database = uri.AbsolutePath.TrimStart('/');
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+
+        // Bật SSL cho Heroku Postgres
+        connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    }
+    catch
+    {
+        // Nếu parse lỗi, giữ nguyên connectionString từ appsettings
+    }
+}
+
 
 // Đăng ký DbContext với PostgreSQL
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(
-        // CRITICAL: Pool size = 1 để tránh "too many connections" - role có thể chỉ cho phép 2-3 connections
-        // Connection Lifetime = 180s (3 phút) để tự động recycle connections
+        // Pool size nhỏ để tránh "too many connections"; SSL đã được thêm ở trên khi parse DATABASE_URL
         connectionString + ";Pooling=true;Maximum Pool Size=1;Minimum Pool Size=0;Timeout=10;Connection Lifetime=180;",
         npgsqlOptions =>
     {
-        // TẮT retry để tránh tạo thêm connections khi gặp "too many connections"
-        // Retry chỉ làm tệ hơn khi đã đạt connection limit
-        // Nếu cần retry, chỉ bật lại khi đã fix connection limit issue
-        // npgsqlOptions.EnableRetryOnFailure(
-        //     maxRetryCount: 0,
-        //     maxRetryDelay: TimeSpan.FromSeconds(1),
-        //     errorCodesToAdd: null);
+        // Không bật retry để tránh tăng số kết nối khi DB đã đạt limit
     }));
 
 builder.Services.AddTransient<DatabaseSeeder>();
