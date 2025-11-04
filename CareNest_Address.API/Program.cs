@@ -39,14 +39,18 @@ string connectionString = dbSettings!.GetConnectionString();
 // Đăng ký DbContext với PostgreSQL
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(
-        // Bổ sung tham số pooling để hạn chế số kết nối (giảm xuống 3 để tránh too many connections)
-        connectionString + ";Pooling=true;Maximum Pool Size=3;Minimum Pool Size=0;Timeout=15;Connection Lifetime=300;",
+        // CRITICAL: Pool size = 1 để tránh "too many connections" - role có thể chỉ cho phép 2-3 connections
+        // Connection Lifetime = 180s (3 phút) để tự động recycle connections
+        connectionString + ";Pooling=true;Maximum Pool Size=1;Minimum Pool Size=0;Timeout=10;Connection Lifetime=180;",
         npgsqlOptions =>
     {
-        npgsqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3, // Giảm retry count để tránh tạo nhiều connections
-            maxRetryDelay: TimeSpan.FromSeconds(3),
-            errorCodesToAdd: null);
+        // TẮT retry để tránh tạo thêm connections khi gặp "too many connections"
+        // Retry chỉ làm tệ hơn khi đã đạt connection limit
+        // Nếu cần retry, chỉ bật lại khi đã fix connection limit issue
+        // npgsqlOptions.EnableRetryOnFailure(
+        //     maxRetryCount: 0,
+        //     maxRetryDelay: TimeSpan.FromSeconds(1),
+        //     errorCodesToAdd: null);
     }));
 
 builder.Services.AddTransient<DatabaseSeeder>();
