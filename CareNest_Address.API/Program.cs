@@ -39,13 +39,13 @@ string connectionString = dbSettings!.GetConnectionString();
 // Đăng ký DbContext với PostgreSQL
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(
-        // Bổ sung tham số pooling để hạn chế số kết nối
-        connectionString + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;",
+        // Bổ sung tham số pooling để hạn chế số kết nối (giảm xuống 3 để tránh too many connections)
+        connectionString + ";Pooling=true;Maximum Pool Size=3;Minimum Pool Size=0;Timeout=15;Connection Lifetime=300;",
         npgsqlOptions =>
     {
         npgsqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
+            maxRetryCount: 3, // Giảm retry count để tránh tạo nhiều connections
+            maxRetryDelay: TimeSpan.FromSeconds(3),
             errorCodesToAdd: null);
     }));
 
